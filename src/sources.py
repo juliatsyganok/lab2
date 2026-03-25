@@ -44,11 +44,6 @@ class GeneratorTaskSource:
         return f"GeneratorTaskSource(count={self.count}, prefix='{self.prefix}')"
     
 
-
-import requests
-from typing import Any, List
-
-
 class ApiTaskSource:
     """Источник задач из API"""
     DEFAULT_PREFIX = "api"
