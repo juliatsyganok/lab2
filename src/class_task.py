@@ -1,60 +1,56 @@
 from datetime import datetime
 
-class NonEmptyString:
+class empty:
     """Дескриптор для непустых строк"""
     
     def __set_name__(self, owner, name):
-        self.private_name = f"_{name}"
+        self.private = f"_{name}"
     
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return getattr(instance, self.private_name, None)
+        return getattr(instance, self.private, None)
     
     def __set__(self, instance, value):
         if not isinstance(value, str):
-            raise TypeError(f"{self.private_name[1:]} must be a string")
+            raise TypeError(f"{self.private[1:]} строка")
         if not value.strip():
-            raise ValueError(f"{self.private_name[1:]} cannot be empty")
-        setattr(instance, self.private_name, value)
+            raise ValueError(f"{self.private[1:]} пустое")
+        setattr(instance, self.private, value)
 
 
-class ReadOnlyAfterInit(NonEmptyString):
+class reading(empty):
     """Установка 1 раз"""
     def __set__(self, instance, value):
-        if hasattr(instance, self.private_name):
-            raise AttributeError(f"{self.private_name[1:]} cannot be changed after initialization")
+        if hasattr(instance, self.private):
+            raise AttributeError(f"{self.private[1:]} нельзя обновить значение")
         super().__set__(instance, value)
 
 
-class ChoiceDescriptor:
+class choice:
     """Значение из списка"""
     def __init__(self, allowed_values):
         self.allowed_values = allowed_values
     
     def __set_name__(self, owner, name):
-        self.private_name = f"_{name}"
+        self.private = f"_{name}"
     
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return getattr(instance, self.private_name, None)
+        return getattr(instance, self.private, None)
     
     def __set__(self, instance, value):
         if value not in self.allowed_values:
-            raise ValueError(
-                f"{self.private_name[1:]} must be one of {self.allowed_values}, got '{value}'"
-            )
-        setattr(instance, self.private_name, value)
+            raise ValueError(f"{self.private[1:]} значение из списка {self.allowed_values}, '{value}'")
+        setattr(instance, self.private, value)
 
 class Task:
-    """
-    Класс задачи
-    """
-    id = ReadOnlyAfterInit()
-    description = NonEmptyString()
-    priority = ChoiceDescriptor(["low", "medium", "high"])
-    status = ChoiceDescriptor(["new", "in_progress", "done"])
+    """Класс задачи"""
+    id = reading()
+    description = empty()
+    priority = choice(["low", "medium", "high"])
+    status = choice(["new", "in_progress", "done"])
     
     def __init__(self, task_id: str, description: str, priority: str = "medium", status: str = "new"):
         self.id = task_id
@@ -65,7 +61,7 @@ class Task:
     
     @property
     def created_at(self) -> datetime:
-        """Создано в"""
+        """Создано d"""
         return self._created_at
     
     @property
