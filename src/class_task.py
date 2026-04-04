@@ -1,4 +1,5 @@
 from datetime import datetime
+from dataclasses import dataclass
 
 class empty:
     """Дескриптор для непустых строк"""
@@ -45,10 +46,35 @@ class choice:
             raise ValueError(f"{self.private[1:]} значение из списка {self.allowed_values}, '{value}'")
         setattr(instance, self.private, value)
 
+
+
+@dataclass
+class bounded:
+    """строка длины не больше опр."""
+    max_length: int        
+    min_length: int = 1     
+
+    def __set_name__(self, owner, name):
+        self.private = f"_{name}"
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return getattr(instance, self.private, None)
+
+    def __set__(self, instance, value):
+        if not isinstance(value, str):
+            raise TypeError(f"{self.private[1:]} должно быть строкой")
+        if len(value) < self.min_length:
+            raise ValueError(f"{self.private[1:]}: минимум {self.min_length}")
+        if len(value) > self.max_length:
+            raise ValueError(f"{self.private[1:]}: максимум {self.max_length}")
+        setattr(instance, self.private, value)
+
 class Task:
     """Класс задачи"""
     id = reading()
-    description = empty()
+    description = bounded(max_length=200)
     priority = choice(["low", "medium", "high"])
     status = choice(["new", "in_progress", "done"])
     
@@ -69,8 +95,4 @@ class Task:
         return self.status != "done" and self.priority != "low"
     
     def __repr__(self) -> str:
-        return (
-            f"Task(id={self.id!r}, description={self.description!r}, "
-            f"priority={self.priority!r}, status={self.status!r}, "
-            f"created_at={self.created_at.isoformat()!r})"
-        )
+        return (f"Task(id={self.id!r}, description={self.description!r}, "f"priority={self.priority!r}, status={self.status!r}, "f"created_at={self.created_at.isoformat()!r})")
